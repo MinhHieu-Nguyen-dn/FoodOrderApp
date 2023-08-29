@@ -2,12 +2,11 @@ package com.example.foodorder;
 
 
 import androidx.appcompat.app.AppCompatActivity;
-//import androidx.preference.PreferenceManager;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.util.Patterns;
 
 
 import com.example.foodorder.databinding.ActivityLoginBinding;
@@ -17,7 +16,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 public class LoginActivity extends AppCompatActivity {
 
     private ActivityLoginBinding binding;
-
 
     @SuppressLint("RestrictedApi")
     @Override
@@ -34,8 +32,13 @@ public class LoginActivity extends AppCompatActivity {
             String email = binding.signinEmail.getText().toString().trim(); // Trim to remove leading/trailing spaces
             String password = binding.signinPassword.getText().toString();
 
+            boolean isValidated = validateData(email,password);
+            if(!isValidated){
+                return;
+            }
+
             FirebaseFirestore database = FirebaseFirestore.getInstance();
-            database.collection("Accounts")
+            database.collection("account")
                     .whereEqualTo("email", email)
                     .whereEqualTo("password", password)
                     .get()
@@ -48,6 +51,25 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     });
         });
+
+        binding.signupButton.setOnClickListener(v -> {
+            Intent intent = new Intent(getApplicationContext(), SignupActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        });
+    }
+
+    boolean validateData(String email,String password){
+
+        if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
+            binding.signinEmail.setError("Email is invalid");
+            return false;
+        }
+        if(password.length()<6){
+            binding.signinPassword.setError("Password length is invalid");
+            return false;
+        }
+        return true;
     }
 
 }
